@@ -12,7 +12,7 @@ struct ALUInput {
 
 struct ALUOutput {
     Register<32> out;
-    Register<32> done;
+    Register<1> done;
 };
 
 struct ALUModule : dark::Module<ALUInput, ALUOutput> {
