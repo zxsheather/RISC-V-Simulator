@@ -2,11 +2,12 @@
 #include "tools.h"
 
 void PCModule::work() {
-    if (to_unsigned(stall) == 0){
-        if (to_unsigned(branch_taken)) {
+    if (stall==0){
+        if (branch_taken) {
             pc <= branch_target;
         } else {
-            pc <= pc + 4;
+            pc <= old_pc + 4;
         }
     }
+    old_pc_plus4 <= old_pc + 4;
 }

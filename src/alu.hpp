@@ -1,6 +1,5 @@
 #pragma once
 #include "module.h"
-#include "register.h"
 #include "tools.h"
 
 struct ALUInput {
