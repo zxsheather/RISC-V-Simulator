@@ -11,8 +11,7 @@ const max_size_t MAX_DMEM = 0x11000;
 struct DMEMInput {
     Wire<32> mem_addr;
     Wire<32> write_data;
-    Wire<1> mem_read;
-    Wire<1> mem_write;
+    Wire<2> mem_op; // 0: None 1: Read 2: Write
     Wire<2> mem_width;
     Wire<1> mem_unsigned;
 };
@@ -22,7 +21,7 @@ struct DMEMOutput {
 };
 
 struct DMEMPrivate {
-    std::array< uint8_t, MAX_DMEM> memory;
+    std::array< Register<8>, MAX_DMEM> memory;
 };
 
 struct DMEMModule : dark::Module<DMEMInput, DMEMOutput, DMEMPrivate> {

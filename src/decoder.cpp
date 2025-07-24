@@ -1,36 +1,13 @@
 #include "decoder.hpp"
 #include "bit.h"
 #include "bit_impl.h"
-#include "concept.h"
 #include "opcode.hpp"
 #include "tools.h"
 
-void DecoderModule::init() {
-  rd_index <= 0;
-  rs1_index <= 0;
-  rs2_index <= 0;
-  immediate <= 0;
-  opcode <= 0;
-  alu_op <= 0;
-  alu_enable <= 0;
-  alu_src <= 0;
-  branch <= 0;
-  branch_op <= 0;
-  mem_read <= 0;
-  mem_write <= 0;
-  reg_write <= 0;
-  mem_width <= 0; 
-  mem_unsigned <= 0; 
-  pc_to_alu <= 0;
-  jump <= 0;
-  link <= 0;
-  jalr <= 0;
-}
 
 void DecoderModule::work() {
   Bit<32> inst = instruction;
-  opcode <= inst.range<6, 0>();
-  init();
+  Bit<7> opcode = inst.range<6, 0>();
 
   switch (to_unsigned(opcode)) {
   case 0b0110011: {
@@ -98,11 +75,13 @@ void DecoderModule::decode_r_arith(const Bit<32> &inst) {
     switch (f7) {
     // ADD
     case 0b0000000: {
+      std::cerr << "ALU ADD" << std::endl;
       alu_op <= static_cast<max_size_t>(Opcode::ADD);
       break;
     }
     // SUB
     case 0b0100000: {
+      std::cerr << "ALU SUB" << std::endl;
       alu_op <= static_cast<max_size_t>(Opcode::SUB);
       break;
     }
@@ -112,24 +91,28 @@ void DecoderModule::decode_r_arith(const Bit<32> &inst) {
 
   // SLL
   case 0b001: {
+    std::cerr << "ALU SLL" << std::endl;
     alu_op <= static_cast<max_size_t>(Opcode::SLL);
     break;
   }
 
   // SLT
   case 0b010: {
+    std::cerr << "ALU SLT" << std::endl;
     alu_op <= static_cast<max_size_t>(Opcode::SLT);
     break;
   }
 
   // SLTU
   case 0b011: {
+    std::cerr << "ALU SLTU" << std::endl;
     alu_op <= static_cast<max_size_t>(Opcode::SLTU);
     break;
   }
 
   // XOR
   case 0b100: {
+    std::cerr << "ALU XOR" << std::endl;
     alu_op <= static_cast<max_size_t>(Opcode::XOR);
     break;
   }
@@ -139,11 +122,13 @@ void DecoderModule::decode_r_arith(const Bit<32> &inst) {
     switch (f7) {
     // SRL
     case 0b0000000: {
+      std::cerr << "ALU SRL" << std::endl;
       alu_op <= static_cast<max_size_t>(Opcode::SRL);
       break;
     }
     // SRA
     case 0b0100000: {
+      std::cerr << "ALU SRA" << std::endl;
       alu_op <= static_cast<max_size_t>(Opcode::SRA);
       break;
     }
@@ -153,12 +138,14 @@ void DecoderModule::decode_r_arith(const Bit<32> &inst) {
 
   // OR
   case 0b110: {
+    std::cerr << "ALU OR" << std::endl;
     alu_op <= static_cast<max_size_t>(Opcode::OR);
     break;
   }
 
   // AND
   case 0b111: {
+    std::cerr << "ALU AND" << std::endl;
     alu_op <= static_cast<max_size_t>(Opcode::AND);
     break;
   }
@@ -178,6 +165,7 @@ void DecoderModule::decode_i_arith(const Bit<32> &inst) {
   switch (f3) {
   // ADDI
   case 0b000: {
+    std::cerr << "ALU ADDI" << std::endl;
     immediate <= dark::sign_extend<32>(inst.range<31, 20>());
     alu_op <= static_cast<max_size_t>(Opcode::ADD);
     break;
@@ -185,6 +173,7 @@ void DecoderModule::decode_i_arith(const Bit<32> &inst) {
 
   // SLTI
   case 0b010: {
+    std::cerr << "ALU SLTI" << std::endl;
     immediate <= dark::sign_extend<32>(inst.range<31, 20>());
     alu_op <= static_cast<max_size_t>(Opcode::SLT);
     break;
@@ -192,6 +181,7 @@ void DecoderModule::decode_i_arith(const Bit<32> &inst) {
 
   // SLTIU
   case 0b011: {
+    std::cerr << "ALU SLTIU" << std::endl;
     immediate <= dark::sign_extend<32>(inst.range<31, 20>());
     alu_op <= static_cast<max_size_t>(Opcode::SLTU);
     break;
@@ -199,6 +189,7 @@ void DecoderModule::decode_i_arith(const Bit<32> &inst) {
 
   // XORI
   case 0b100: {
+    std::cerr << "ALU XORI" << std::endl;
     immediate <= dark::sign_extend<32>(inst.range<31, 20>());
     alu_op <= static_cast<max_size_t>(Opcode::XOR);
     break;
@@ -206,6 +197,7 @@ void DecoderModule::decode_i_arith(const Bit<32> &inst) {
 
   // ORI
   case 0b110: {
+    std::cerr << "ALU ORI" << std::endl;
     immediate <= dark::sign_extend<32>(inst.range<31, 20>());
     alu_op <= static_cast<max_size_t>(Opcode::OR);
     break;
@@ -213,6 +205,7 @@ void DecoderModule::decode_i_arith(const Bit<32> &inst) {
 
   // ANDI
   case 0b111: {
+    std::cerr << "ALU ANDI" << std::endl;
     immediate <= dark::sign_extend<32>(inst.range<31, 20>());
     alu_op <= static_cast<max_size_t>(Opcode::AND);
     break;
@@ -220,6 +213,7 @@ void DecoderModule::decode_i_arith(const Bit<32> &inst) {
 
   // SLLI
   case 0b001: {
+    std::cerr << "ALU SLLI" << std::endl;
     immediate <= dark::sign_extend<32>(inst.range<24, 20>());
     alu_op <= static_cast<max_size_t>(Opcode::SLL);
     break;
@@ -232,12 +226,14 @@ void DecoderModule::decode_i_arith(const Bit<32> &inst) {
     switch (f7) {
     // SRLI
     case 0b0000000: {
+      std::cerr << "ALU SRLI" << std::endl;
       alu_op <= static_cast<max_size_t>(Opcode::SRL);
       break;
     }
 
     // SRAI
     case 0b0100000: {
+      std::cerr << "ALU SRAI" << std::endl;
       alu_op <= static_cast<max_size_t>(Opcode::SRA);
       break;
     }
@@ -252,25 +248,26 @@ void DecoderModule::decode_load(const Bit<32> &inst) {
   rs2_index <= 0;
 
   Bit<12> imm12 = inst.range<31, 20>();
-  immediate <= dark::sign_extend<32>(inst.range<31, 25>());
+  immediate <= dark::sign_extend<32>(imm12);
   alu_src <= 1;
   alu_enable <= 1;
   alu_op <= static_cast<max_size_t>(Opcode::ADD);
   branch <= 0;
-  mem_read <= 1;
-  mem_write <= 0;
+  mem_op <= 1;
   reg_write <= 1;
 
   max_size_t f3 = to_unsigned(inst.range<14, 12>());
   switch (f3) {
   // LB
   case 0b000: {
+    std::cerr << "LB" << std::endl;
     mem_width <= 0;
     mem_unsigned <= 0;
     break;
   }
   // LH
   case 0b001: {
+    std::cerr << "LH" << std::endl;
     mem_width <= 1;
     mem_unsigned <= 0;
     break;
@@ -278,6 +275,7 @@ void DecoderModule::decode_load(const Bit<32> &inst) {
 
   // LW
   case 0b010: {
+    std::cerr << "LW" << std::endl;
     mem_width <= 2;
     mem_unsigned <= 0;
     break;
@@ -285,6 +283,7 @@ void DecoderModule::decode_load(const Bit<32> &inst) {
 
   // LBU
   case 0b100: {
+    std::cerr << "LBU" << std::endl;
     mem_width <= 0;
     mem_unsigned <= 1;
     break;
@@ -292,6 +291,7 @@ void DecoderModule::decode_load(const Bit<32> &inst) {
 
   // LHU
   case 0b101: {
+    std::cerr << "LHU" << std::endl;
     mem_width <= 1;
     mem_unsigned <= 1;
     break;
@@ -310,22 +310,24 @@ void DecoderModule::decode_s_type(const Bit<32>& inst) {
   alu_enable <= 1;
   alu_op <= static_cast<max_size_t>(Opcode::ADD);
   branch <= 0;
-  mem_read <= 0;
-  mem_write <= 1;
+  mem_op <= 2;
   reg_write <= 0;
   switch (f3) {
   // SB
   case 0b000:{
+    std::cerr << "SB" << std::endl;
     mem_width <= 0;
     break;
   }
 
   case 0b001:{
+    std::cerr << "SH" << std::endl;
     mem_width <= 1;
     break;
   }
 
   case 0b010: {
+    std::cerr << "SW" << std::endl;
     mem_width <= 2;
     break;
   }
@@ -335,17 +337,18 @@ void DecoderModule::decode_s_type(const Bit<32>& inst) {
 }
 
 void DecoderModule::decode_lui(const Bit<32> &inst){
+  std::cerr << "LUI" << std::endl;
   rd_index <= inst.range<11, 7>();
   immediate <= (dark::zero_extend(inst.range<31, 12>()) << 12);
   rs1_index <= 0;
   rs2_index <= 0;
   alu_enable <= 0;
-  mem_read <= 0;
-  mem_write <= 0;
+  mem_op <= 0;
   reg_write <= 1;
 }
 
 void DecoderModule::decode_auipc(const Bit<32> &inst) {
+  std::cerr << "AUIPC" << std::endl;
   rd_index <= inst.range<11, 7>();
   immediate <= (dark::zero_extend(inst.range<31, 12>()) << 12);
   rs1_index <= 0;
@@ -353,15 +356,13 @@ void DecoderModule::decode_auipc(const Bit<32> &inst) {
 
   alu_enable <= 1;
   alu_op <= static_cast<max_size_t>(Opcode::ADD);
-  alu_src <= 1;
+  alu_src <= 2;
   branch <= 0;
-  mem_read <= 0;
-  mem_write <= 0;
   reg_write <= 1;
-  pc_to_alu <= 1;
 }
 
 void DecoderModule::decode_jal(const Bit<32> &inst) {
+  std::cerr << "JAL" << std::endl;
   rd_index <= inst.range<11, 7>();
   rs1_index <= 0;  
   rs2_index <= 0; 
@@ -377,12 +378,12 @@ void DecoderModule::decode_jal(const Bit<32> &inst) {
   alu_src <= 1;
   alu_op <= static_cast<max_size_t>(Opcode::ADD);
   branch <= 1;
-  jump <= 1;
-  link <= 1;
-  jalr <= 0;
+  reg_write <= 1;
+  jump_link <= 1;
 }
 
 void DecoderModule::decode_jalr(const Bit<32> &inst) {
+  std::cerr << "JALR" << std::endl;
   rd_index <= inst.range<11, 7>();
   rs1_index <= inst.range<19, 15>();
   rs2_index <= 0;
@@ -394,11 +395,8 @@ void DecoderModule::decode_jalr(const Bit<32> &inst) {
   alu_op <= static_cast<max_size_t>(Opcode::ADD);
   alu_src <= 1;
   branch <= 0;
-  mem_read <= 0;
   reg_write <= 1;
-  jump <= 1;
-  link <= 1;
-  jalr <= 1;
+  jump_link <= 2;
 }
 
 void DecoderModule::decode_b_type(const Bit<32> &inst) {
@@ -416,7 +414,7 @@ void DecoderModule::decode_b_type(const Bit<32> &inst) {
   alu_enable <= 0;
   alu_src <= 0;
   branch <= 1;
-  mem_read <= 0;
-  reg_write <= 0;
   branch_op <= inst.range<14, 12>();
+  jump_link <= 0;
+  reg_write <= 0;
 }

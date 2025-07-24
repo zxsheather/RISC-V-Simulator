@@ -2,7 +2,6 @@
 #include "tools.h"
 
 void BranchCompModule::work() {
-  branch_taken <= 0;
   if (branch) {
     max_size_t op = to_unsigned(branch_op);
 
@@ -37,5 +36,7 @@ void BranchCompModule::work() {
       branch_taken <= (rs1 >= rs2 ? 1 : 0);
       break;
     }
+  } else {
+    branch_taken <= 0;
   }
 }

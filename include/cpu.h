@@ -4,6 +4,7 @@
 #include <memory>
 #include <random>
 #include <vector>
+#include <iostream>
 
 namespace dark {
 
@@ -39,6 +40,7 @@ public:
 
 	void run_once() {
 		++cycles;
+		std::cerr << "Cycle: " << cycles << std::endl;
 		for (auto &module: modules)
 			module->work();
 		sync_all();

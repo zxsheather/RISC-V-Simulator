@@ -17,10 +17,8 @@ struct RegFileOutput {
   Register<32> rs2_data;
 };
 
-struct RegFilePrivate {
-  std::array< Register<32>, 32> regs;
-};
 
-struct RegFileModule : dark::Module<RegFileInput, RegFileOutput, RegFilePrivate> {
+struct RegFileModule : dark::Module<RegFileInput, RegFileOutput> {
   void work() override;
+  std::array< Register<32>, 32> regs;
 };
