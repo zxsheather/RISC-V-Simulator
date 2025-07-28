@@ -1,7 +1,6 @@
 #pragma once
-#include "tools.h"
 
-enum class Opcode : dark::max_size_t {
+enum Opcode {
 	ADD,
 	SUB,
 	SLL,
@@ -12,8 +11,31 @@ enum class Opcode : dark::max_size_t {
 	XOR,
 	SLT,
 	SLTU,
-	SGE,
-	SGEU,
-	SEQ,
-	SNEQ
+	ADDI,
+	SLLI,
+	SRLI,
+	SRAI,
+	ANDI,
+	ORI,
+	XORI,
+	SLTI,
+	SLTIU,
+	BEQ,
+	BNE,
+	BLT,
+	BGE,
+	BLTU,
+	BGEU,
+	LB,
+	LH,
+	LW,
+	LBU,
+	LHU,
+	SB,
+	SH,
+	SW,
+	JAL,
+	JALR,
+	AUIPC,
+	LUI,
 };
