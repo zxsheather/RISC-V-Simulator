@@ -1,17 +1,12 @@
 #include "rs.hpp"
-#include "concept.h"
 #include "executer.hpp"
-#include "opcode.hpp"
+#include "util.hpp"
 #include "tools.h"
 #include <cstdint>
 #include <ostream>
-#include <iomanip>
 
 void RSModule::work() {
-  // for (int i = 0; i < 32; ++i) {
-  //   std::cout << "RS::regs[" << i << "] = " << to_unsigned(regs[i])
-  //             << std::endl;
-  // }
+  cycle++;
   int newly_freed_rd = -1, newly_append_ind = -1;
   Bit<32> new_val;
   bool reuse = 0;
@@ -29,8 +24,8 @@ void RSModule::work() {
     return;
   }
   if (in) {
-    std::cerr << "RS: Issue PC: " << std::hex << std::setw(8) << std::setfill('0')
-              << to_unsigned(pc) << std::dec << std::endl;
+    // std::cerr << "RS: Issue PC: " << std::hex << std::setw(8)
+    //           << std::setfill('0') << to_unsigned(pc) << std::dec << std::endl;
     max_size_t i = 0;
     for (; i < RS_MAX; ++i) {
       if (busy[i] == 0) {
@@ -108,12 +103,12 @@ void RSModule::work() {
   }
   memory_flag <= (cnt > MIN_AVAL);
   bool rob_out_flag = 0, lsb_out_flag = 0;
-  for (uint32_t i = 0; i < RS_MAX; ++i) {
+  for (uint32_t i = 0; i < std::min(RS_MAX, to_unsigned(pos_in_rob) + 2); ++i) {
     if (busy[i] && qj[i] == Q_DEFAULT && qk[i] == Q_DEFAULT &&
         dispatched[i] == 0 && to_unsigned(rob_dests[i]) < rob_pos + ROB_MAX) {
-      std::cerr << "RS: Dispatching instruction at index " << i
-                << " with PC: " << std::hex << std::setw(8) << std::setfill('0')
-                << to_unsigned(pcs[i]) << std::dec << std::endl;
+      // std::cerr << "RS: Dispatching instruction at index " << i
+      //           << " with PC: " << std::hex << std::setw(8) << std::setfill('0')
+      //           << to_unsigned(pcs[i]) << std::dec << std::endl;
       trans(i, rob_out_flag, lsb_out_flag);
       break;
     }
@@ -171,6 +166,8 @@ void RSModule::exec(uint32_t pos, bool &src1, bool &src2, bool &userd) {
 void RSModule::print_res() {
   Bit<32> res = regs[10];
   std::cout << to_unsigned(res.range<7, 0>()) << std::endl;
+  std::cerr << "Cycle count: " << cycle << std::endl;
+  predictor->print_stats();
   exit(0);
 }
 
@@ -209,7 +206,8 @@ void RSModule::flush() {
   for (max_size_t i = 0; i < 32; ++i) {
     reorder_busy[i] <= 0;
   }
-  for (max_size_t i = 0; i < RS_MAX; ++i) {
+  for (max_size_t i = 0; i < std::min(RS_MAX, to_unsigned(pos_in_rob) + 2);
+       ++i) {
     busy[i] <= 0;
   }
   rob_flag <= 0;

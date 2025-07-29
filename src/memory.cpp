@@ -1,11 +1,9 @@
 #include "memory.hpp"
-#include "opcode.hpp"
+#include "util.hpp"
 #include "tools.h"
-#include <algorithm>
 #include <cstdint>
-#include <iomanip>
 #include <sstream>
-#include <sys/types.h>
+#include "predictor.hpp"
 
 void MemoryModule::load() {
   std::string line;
@@ -32,16 +30,16 @@ void MemoryModule::work() {
   uint32_t updated_now_pc = to_unsigned(pc);
   if (rob_in) {
     if (!predictor->refresh_predictor(this)) {
-      std::cerr << "Predictor: Prediction Fail. Jump to "
-                << to_unsigned(rob_pc) << std::endl;
+      // std::cerr << "Predictor: Prediction Fail. Jump to "
+      //           << to_unsigned(rob_pc) << std::endl;
       updated_now_pc = to_unsigned(rob_pc);
     }
   }
   old_pc <= updated_now_pc;
   if (rs_available && updated_now_pc < MEM_MAX) {
     out <= 1;
-    std::cerr << "Memory: Issue PC " << std::hex << std::setw(8)
-              << std::setfill('0') << updated_now_pc << std::dec << std::endl;
+    // std::cerr << "Memory: Issue PC " << std::hex << std::setw(8)
+    //           << std::setfill('0') << updated_now_pc << std::dec << std::endl;
     decode_and_issue(updated_now_pc);
   } else {
     pc <= updated_now_pc;
@@ -49,31 +47,6 @@ void MemoryModule::work() {
   }
 }
 
-uint32_t TwoBitPredictor::total_predictions() { return total_predictions_; }
-
-uint32_t TwoBitPredictor::correct_predictions() { return correct_predictions_; }
-
-bool TwoBitPredictor::refresh_predictor(const MemoryModule *mem) {
-  uint32_t pc_predict_ = to_unsigned(mem->predict_pc);
-  total_predictions_++;
-  if (mem->is_jump) {
-    predict[pc_predict_] = std::min(predict[pc_predict_] + 1, 3u);
-  } else {
-    if (predict[pc_predict_] > 0) {
-      predict[pc_predict_]--;
-    }
-  }
-  if (jumps[pc_predict_] != mem->is_jump) {
-    return false;
-  } else {
-    correct_predictions_++;
-    return true;
-  }
-}
-
-bool TwoBitPredictor::opt(const MemoryModule *mem, uint32_t pc_now) {
-  return predict[pc_now] >= 2;
-}
 
 Bit<32> MemoryModule::read_memory(uint32_t addr, uint32_t width,
                                   bool is_unsigned) {
@@ -183,7 +156,7 @@ void MemoryModule::decode_and_issue(uint32_t pc_) {
   }
 
   case 0b1101111: {
-    std::cerr << "JAL" << std::endl;
+    // std::cerr << "JAL" << std::endl;
     decode_jal(inst, pc_);
     src1 = 0;
     src2 = 0;
@@ -194,6 +167,16 @@ void MemoryModule::decode_and_issue(uint32_t pc_) {
     decode_jalr(inst, pc_);
     src2 = 0;
     break;
+  }
+
+  default: {
+    // std::cerr << "Unknown opcode: " << std::hex << std::setw(8)
+    //           << std::setfill('0') << opcode << std::dec << std::endl;
+    op <= static_cast<max_size_t>(Opcode::UNKNOWN);
+    src1 = 0;
+    src2 = 0;
+    userd = 0;
+    pc <= pc_ + 4;
   }
   }
 
@@ -226,13 +209,13 @@ void MemoryModule::decode_r_arith(const Bit<32> &inst, uint32_t pc_) {
     switch (f7) {
     // ADD
     case 0b0000000: {
-      std::cerr << "ALU ADD" << std::endl;
+      // std::cerr << "ALU ADD" << std::endl;
       op <= static_cast<max_size_t>(Opcode::ADD);
       break;
     }
     // SUB
     case 0b0100000: {
-      std::cerr << "ALU SUB" << std::endl;
+      // std::cerr << "ALU SUB" << std::endl;
       op <= static_cast<max_size_t>(Opcode::SUB);
       break;
     }
@@ -242,28 +225,28 @@ void MemoryModule::decode_r_arith(const Bit<32> &inst, uint32_t pc_) {
 
   // SLL
   case 0b001: {
-    std::cerr << "ALU SLL" << std::endl;
+    // std::cerr << "ALU SLL" << std::endl;
     op <= static_cast<max_size_t>(Opcode::SLL);
     break;
   }
 
   // SLT
   case 0b010: {
-    std::cerr << "ALU SLT" << std::endl;
+    // std::cerr << "ALU SLT" << std::endl;
     op <= static_cast<max_size_t>(Opcode::SLT);
     break;
   }
 
   // SLTU
   case 0b011: {
-    std::cerr << "ALU SLTU" << std::endl;
+    // std::cerr << "ALU SLTU" << std::endl;
     op <= static_cast<max_size_t>(Opcode::SLTU);
     break;
   }
 
   // XOR
   case 0b100: {
-    std::cerr << "ALU XOR" << std::endl;
+    // std::cerr << "ALU XOR" << std::endl;
     op <= static_cast<max_size_t>(Opcode::XOR);
     break;
   }
@@ -273,13 +256,13 @@ void MemoryModule::decode_r_arith(const Bit<32> &inst, uint32_t pc_) {
     switch (f7) {
     // SRL
     case 0b0000000: {
-      std::cerr << "ALU SRL" << std::endl;
+      // std::cerr << "ALU SRL" << std::endl;
       op <= static_cast<max_size_t>(Opcode::SRL);
       break;
     }
     // SRA
     case 0b0100000: {
-      std::cerr << "ALU SRA" << std::endl;
+      // std::cerr << "ALU SRA" << std::endl;
       op <= static_cast<max_size_t>(Opcode::SRA);
       break;
     }
@@ -289,14 +272,14 @@ void MemoryModule::decode_r_arith(const Bit<32> &inst, uint32_t pc_) {
 
   // OR
   case 0b110: {
-    std::cerr << "ALU OR" << std::endl;
+    // std::cerr << "ALU OR" << std::endl;
     op <= static_cast<max_size_t>(Opcode::OR);
     break;
   }
 
   // AND
   case 0b111: {
-    std::cerr << "ALU AND" << std::endl;
+    // std::cerr << "ALU AND" << std::endl;
     op <= static_cast<max_size_t>(Opcode::AND);
     break;
   }
@@ -310,7 +293,7 @@ void MemoryModule::decode_i_arith(const Bit<32> &inst, uint32_t pc_) {
   switch (f3) {
   // ADDI
   case 0b000: {
-    std::cerr << "ALU ADDI" << std::endl;
+    // std::cerr << "ALU ADDI" << std::endl;
     a <= dark::sign_extend<32>(inst.range<31, 20>());
     op <= static_cast<max_size_t>(Opcode::ADDI);
     break;
@@ -318,7 +301,7 @@ void MemoryModule::decode_i_arith(const Bit<32> &inst, uint32_t pc_) {
 
   // SLTI
   case 0b010: {
-    std::cerr << "ALU SLTI" << std::endl;
+    // std::cerr << "ALU SLTI" << std::endl;
     a <= dark::sign_extend<32>(inst.range<31, 20>());
     op <= static_cast<max_size_t>(Opcode::SLTI);
     break;
@@ -326,7 +309,7 @@ void MemoryModule::decode_i_arith(const Bit<32> &inst, uint32_t pc_) {
 
   // SLTIU
   case 0b011: {
-    std::cerr << "ALU SLTIU" << std::endl;
+    // std::cerr << "ALU SLTIU" << std::endl;
     a <= dark::sign_extend<32>(inst.range<31, 20>());
     op <= static_cast<max_size_t>(Opcode::SLTIU);
     break;
@@ -334,7 +317,7 @@ void MemoryModule::decode_i_arith(const Bit<32> &inst, uint32_t pc_) {
 
   // XORI
   case 0b100: {
-    std::cerr << "ALU XORI" << std::endl;
+    // std::cerr << "ALU XORI" << std::endl;
     a <= dark::sign_extend<32>(inst.range<31, 20>());
     op <= static_cast<max_size_t>(Opcode::XORI);
     break;
@@ -342,7 +325,7 @@ void MemoryModule::decode_i_arith(const Bit<32> &inst, uint32_t pc_) {
 
   // ORI
   case 0b110: {
-    std::cerr << "ALU ORI" << std::endl;
+    // std::cerr << "ALU ORI" << std::endl;
     a <= dark::sign_extend<32>(inst.range<31, 20>());
     op <= static_cast<max_size_t>(Opcode::ORI);
     break;
@@ -350,7 +333,7 @@ void MemoryModule::decode_i_arith(const Bit<32> &inst, uint32_t pc_) {
 
   // ANDI
   case 0b111: {
-    std::cerr << "ALU ANDI" << std::endl;
+    // std::cerr << "ALU ANDI" << std::endl;
     a <= dark::sign_extend<32>(inst.range<31, 20>());
     op <= static_cast<max_size_t>(Opcode::ANDI);
     break;
@@ -358,7 +341,7 @@ void MemoryModule::decode_i_arith(const Bit<32> &inst, uint32_t pc_) {
 
   // SLLI
   case 0b001: {
-    std::cerr << "ALU SLLI" << std::endl;
+    // std::cerr << "ALU SLLI" << std::endl;
     a <= dark::sign_extend<32>(inst.range<24, 20>());
     op <= static_cast<max_size_t>(Opcode::SLLI);
     break;
@@ -371,14 +354,14 @@ void MemoryModule::decode_i_arith(const Bit<32> &inst, uint32_t pc_) {
     switch (f7) {
     // SRLI
     case 0b0000000: {
-      std::cerr << "ALU SRLI" << std::endl;
+      // std::cerr << "ALU SRLI" << std::endl;
       op <= static_cast<max_size_t>(Opcode::SRLI);
       break;
     }
 
     // SRAI
     case 0b0100000: {
-      std::cerr << "ALU SRAI" << std::endl;
+      // std::cerr << "ALU SRAI" << std::endl;
       op <= static_cast<max_size_t>(Opcode::SRAI);
       break;
     }
@@ -394,30 +377,30 @@ void MemoryModule::decode_load(const Bit<32> &inst, uint32_t pc_) {
   switch (f3) {
 
   case 0b000: {
-    std::cerr << "LB" << std::endl;
+    // std::cerr << "LB" << std::endl;
     op <= static_cast<max_size_t>(Opcode::LB);
   }
 
   case 0b001: {
-    std::cerr << "LH" << std::endl;
+    // std::cerr << "LH" << std::endl;
     op <= static_cast<max_size_t>(Opcode::LH);
     break;
   }
 
   case 0b010: {
-    std::cerr << "LW" << std::endl;
+    // std::cerr << "LW" << std::endl;
     op <= static_cast<max_size_t>(Opcode::LW);
     break;
   }
 
   case 0b100: {
-    std::cerr << "LBU" << std::endl;
+    // std::cerr << "LBU" << std::endl;
     op <= static_cast<max_size_t>(Opcode::LBU);
     break;
   }
 
   case 0b101: {
-    std::cerr << "LHU" << std::endl;
+    // std::cerr << "LHU" << std::endl;
     op <= static_cast<max_size_t>(Opcode::LHU);
     break;
   }
@@ -441,37 +424,37 @@ void MemoryModule::decode_b_type(const Bit<32> &inst, uint32_t pc_) {
   }
   switch (f3) {
   case 0b000: {
-    std::cerr << "BEQ" << std::endl;
+    // std::cerr << "BEQ" << std::endl;
     op <= static_cast<max_size_t>(Opcode::BEQ);
     break;
   }
 
   case 0b001: {
-    std::cerr << "BNE" << std::endl;
+    // std::cerr << "BNE" << std::endl;
     op <= static_cast<max_size_t>(Opcode::BNE);
     break;
   }
 
   case 0b100: {
-    std::cerr << "BLT" << std::endl;
+    // std::cerr << "BLT" << std::endl;
     op <= static_cast<max_size_t>(Opcode::BLT);
     break;
   }
 
   case 0b101: {
-    std::cerr << "BGE" << std::endl;
+    // std::cerr << "BGE" << std::endl;
     op <= static_cast<max_size_t>(Opcode::BGE);
     break;
   }
 
   case 0b110: {
-    std::cerr << "BLTU" << std::endl;
+    // std::cerr << "BLTU" << std::endl;
     op <= static_cast<max_size_t>(Opcode::BLTU);
     break;
   }
 
   case 0b111: {
-    std::cerr << "BGEU" << std::endl;
+    // std::cerr << "BGEU" << std::endl;
     op <= static_cast<max_size_t>(Opcode::BGEU);
     break;
   }
@@ -485,19 +468,19 @@ void MemoryModule::decode_s_type(const Bit<32> &inst, uint32_t pc_) {
   pc <= pc_ + 4;
   switch (f3) {
   case 0b000: {
-    std::cerr << "SB" << std::endl;
+    // std::cerr << "SB" << std::endl;
     op <= static_cast<max_size_t>(Opcode::SB);
     break;
   }
 
   case 0b001: {
-    std::cerr << "SH" << std::endl;
+    // std::cerr << "SH" << std::endl;
     op <= static_cast<max_size_t>(Opcode::SH);
     break;
   }
 
   case 0b010: {
-    std::cerr << "SW" << std::endl;
+    // std::cerr << "SW" << std::endl;
     op <= static_cast<max_size_t>(Opcode::SW);
     break;
   }

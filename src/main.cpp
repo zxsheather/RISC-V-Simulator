@@ -5,14 +5,19 @@
 #include "memory.hpp"
 #include "tools.h"
 #include <cstdio>
+#include "predictor.hpp"
 
 
 int main() {
-  freopen("/home/zx/local_repo/RISC-V-Simulator/testcases/array_test2.data", "r", stdin);
-  freopen("output.txt", "w", stderr);
+  // freopen("/home/zx/local_repo/RISC-V-Simulator/testcases/bulgarian.data", "r", stdin);
+  // freopen("error.txt", "w", stderr);
+  // freopen("output.txt", "w", stdout);
   dark::CPU cpu;
-  RSModule rs;  
-  MemoryModule memory;
+  TwoBitPredictor two_bit_predictor;
+  // AlwaysFalsePredictor always_false_predictor;
+  // AlwaysTruePredictor always_true_predictor;
+  RSModule rs(&two_bit_predictor);  
+  MemoryModule memory(&two_bit_predictor);
   LSBModule lsb(memory);
   ExecuterModule executer;
   cpu.add_module(&memory);
@@ -81,6 +86,6 @@ int main() {
   lsb.dest_rs = [&]() -> auto& {return rs.lsb_dest;};
   lsb.pos_rs = [&]() -> auto& {return rs.to_lsb_pos;};
 
-  cpu.run(10000000, false);
+  cpu.run(1000000000, true);
   return 0;
 }

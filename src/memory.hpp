@@ -1,10 +1,15 @@
 #pragma once
 #include "module.h"
-#include "register.h"
 #include "tools.h"
 #include <cstdint>
+#include "util.hpp"
 
-const int MEM_MAX = 0x100000; 
+
+struct BranchPredictor;
+struct MemoryModule;
+struct TwoBitPredictor;
+struct AlwaysFalsePredictor;
+
 struct MemoryModule;
 struct MemoryInput {
   Wire<1> rs_available;
@@ -27,36 +32,10 @@ struct MemoryOutput {
   Register<1> jump;
 };
 
-struct BranchPredictor {
-  bool jumps[MEM_MAX]{};
-  virtual uint32_t total_predictions() = 0;
-  virtual uint32_t correct_predictions() = 0;
-  virtual bool refresh_predictor(const MemoryModule *mem) = 0;
-  virtual bool opt(const MemoryModule *mem, uint32_t pc_now) {
-    return true; 
-  } 
-  void update_jump(uint32_t pc_now, bool is_jump) {
-    jumps[pc_now] = is_jump;
-  }
-  virtual ~BranchPredictor() = default;
-};
-
-struct TwoBitPredictor : public BranchPredictor {
-  uint32_t total_predictions_ = 0;
-  uint32_t correct_predictions_ = 0;
-  uint32_t predict[MEM_MAX]{};
-  
-
-  uint32_t total_predictions() override;
-  uint32_t correct_predictions() override;
-  bool refresh_predictor(const MemoryModule *mem) override;
-  bool opt(const MemoryModule *mem, uint32_t pc_now) override;
-};
 
 struct MemoryModule : dark::Module<MemoryInput, MemoryOutput> {
-  friend struct TwoBitPredictor;
   uint8_t memory[MEM_MAX]{};
-  BranchPredictor *predictor = new TwoBitPredictor();
+  BranchPredictor *predictor;
 
   void work() override final;
   void load();
@@ -72,5 +51,7 @@ struct MemoryModule : dark::Module<MemoryInput, MemoryOutput> {
   void decode_jalr(const Bit<32> &inst, uint32_t pc_);
   Bit<32> read_memory(uint32_t addr, uint32_t width, bool is_unsigned);
   void write_memory(uint32_t addr, uint32_t width, uint32_t data);
+  MemoryModule(BranchPredictor *predictor_)
+      : predictor(predictor_) {}
   ~MemoryModule();
 };

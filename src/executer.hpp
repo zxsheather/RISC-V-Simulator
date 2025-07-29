@@ -1,10 +1,7 @@
-#include "concept.h"
 #include "module.h"
-#include "register.h"
 #include "tools.h"
 #include <cstdint>
-
-const max_size_t ROB_MAX = 200;
+#include "util.hpp"
 
 struct ExecuterInput {
   Wire<1> in_rs;

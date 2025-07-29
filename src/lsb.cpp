@@ -1,6 +1,6 @@
 #include "lsb.hpp"
 #include "concept.h"
-#include "opcode.hpp"
+#include "util.hpp"
 #include "tools.h"
 #include <cstdint>
 

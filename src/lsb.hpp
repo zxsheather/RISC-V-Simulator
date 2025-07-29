@@ -5,7 +5,6 @@
 #include <cstdint>
 #include "memory.hpp"
 
-const max_size_t LSB_MAX = 120;
 
 struct LSBInput {
   Wire<1> revert;
@@ -35,8 +34,8 @@ struct LSBModule : dark::Module<LSBInput, LSBOutput> {
   void append(uint32_t pos);
 
   uint32_t ticker{}; 
-  int32_t commit_pos{};
-  uint32_t head{};
+  int32_t commit_pos = -1;
+  int32_t head{};
   bool busy[LSB_MAX]{};
   uint32_t ops[LSB_MAX]{};
   uint32_t dests[LSB_MAX]{};

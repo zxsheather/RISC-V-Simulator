@@ -1,14 +1,10 @@
-#include "concept.h"
 #include "module.h"
-#include "register.h"
+#include "predictor.hpp"
 #include "tools.h"
 #include <array>
 #include <cstdint>
+#include "util.hpp"
 
-const max_size_t RS_MAX = 120;
-const max_size_t MIN_AVAL = 5;
-const max_size_t RD_DEFAULT = 33;
-const max_size_t Q_DEFAULT = RS_MAX+1;
 
 struct RSInput {
   Wire<1> in;
@@ -73,6 +69,8 @@ struct RSPrivate {
 };
 
 struct RSModule : dark::Module<RSInput, RSOutput, RSPrivate> {
+  BranchPredictor *predictor;
+  uint32_t cycle = 0;
   void work() override final;
   void exec(uint32_t pos, bool &src1, bool &src2, bool &userd);
   uint32_t lsb_pos = 0;
@@ -80,4 +78,5 @@ struct RSModule : dark::Module<RSInput, RSOutput, RSPrivate> {
   void update(uint32_t ind, Bit<32>& new_val, int& newly_freed_rd);
   void flush();
   void trans(uint32_t i, bool& rob_out_flag, bool& lsb_out_flag);
+  RSModule(BranchPredictor *predictor) : predictor(predictor){}
 };
