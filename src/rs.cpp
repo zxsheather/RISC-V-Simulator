@@ -8,6 +8,10 @@
 #include <iomanip>
 
 void RSModule::work() {
+  // for (int i = 0; i < 32; ++i) {
+  //   std::cout << "RS::regs[" << i << "] = " << to_unsigned(regs[i])
+  //             << std::endl;
+  // }
   int newly_freed_rd = -1, newly_append_ind = -1;
   Bit<32> new_val;
   bool reuse = 0;
@@ -51,7 +55,7 @@ void RSModule::work() {
         vj[i] <= 0;
         qj[i] <= reorder[rs1_ind];
       } else if (newly_freed_rd == rs1_ind) {
-        vj[i] <= newly_freed_rd;
+        vj[i] <= new_val;
         qj[i] <= Q_DEFAULT;
       } else {
         vj[i] <= regs[rs1_ind];
@@ -67,7 +71,7 @@ void RSModule::work() {
         vk[i] <= 0;
         qk[i] <= reorder[rs2_ind];
       } else if (newly_freed_rd == rs2_ind) {
-        vk[i] <= newly_freed_rd;
+        vk[i] <= new_val;
         qk[i] <= Q_DEFAULT;
       } else {
         vk[i] <= regs[rs2_ind];
@@ -156,6 +160,11 @@ void RSModule::exec(uint32_t pos, bool &src1, bool &src2, bool &userd) {
     src2 = 0;
     ready[pos] <= 1;
     as[pos] <= a_in;
+  } else {
+    src1 = 0;
+    src2 = 0;
+    userd = 0;
+    ready[pos] <= 1;
   }
 }
 
