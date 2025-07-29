@@ -1,5 +1,4 @@
 #include "memory.hpp"
-#include "concept.h"
 #include "opcode.hpp"
 #include "tools.h"
 #include <algorithm>
@@ -32,15 +31,17 @@ void MemoryModule::load() {
 void MemoryModule::work() {
   uint32_t updated_now_pc = to_unsigned(pc);
   if (rob_in) {
-    if(!predictor->refresh_predictor(this)) {
-      updated_now_pc = to_unsigned(predict_pc);
+    if (!predictor->refresh_predictor(this)) {
+      std::cerr << "Predictor: Prediction Fail. Jump to "
+                << to_unsigned(rob_pc) << std::endl;
+      updated_now_pc = to_unsigned(rob_pc);
     }
   }
   old_pc <= updated_now_pc;
-  if (rs_available && pc < MEM_MAX) {
+  if (rs_available && updated_now_pc < MEM_MAX) {
     out <= 1;
-    std::cerr << "Issue PC: " << std::hex << std::setw(8) << std::setfill('0')
-              << updated_now_pc << std::dec << std::endl;
+    std::cerr << "Memory: Issue PC " << std::hex << std::setw(8)
+              << std::setfill('0') << updated_now_pc << std::dec << std::endl;
     decode_and_issue(updated_now_pc);
   } else {
     pc <= updated_now_pc;
@@ -48,25 +49,21 @@ void MemoryModule::work() {
   }
 }
 
-uint32_t TwoBitPredictor::total_predictions() {
-  return total_predictions_;
-}
+uint32_t TwoBitPredictor::total_predictions() { return total_predictions_; }
 
-uint32_t TwoBitPredictor::correct_predictions() {
-  return correct_predictions_;
-}
+uint32_t TwoBitPredictor::correct_predictions() { return correct_predictions_; }
 
 bool TwoBitPredictor::refresh_predictor(const MemoryModule *mem) {
   uint32_t pc_predict_ = to_unsigned(mem->predict_pc);
   total_predictions_++;
-  if(mem->is_jump) {
+  if (mem->is_jump) {
     predict[pc_predict_] = std::min(predict[pc_predict_] + 1, 3u);
-  } else{
-    if(predict[pc_predict_] > 0) {
+  } else {
+    if (predict[pc_predict_] > 0) {
       predict[pc_predict_]--;
     }
   }
-  if(jumps[pc_predict_] != mem->is_jump) {
+  if (jumps[pc_predict_] != mem->is_jump) {
     return false;
   } else {
     correct_predictions_++;
@@ -78,8 +75,10 @@ bool TwoBitPredictor::opt(const MemoryModule *mem, uint32_t pc_now) {
   return predict[pc_now] >= 2;
 }
 
-Bit<32> MemoryModule::read_memory(uint32_t addr, uint32_t width, bool is_unsigned) {
+Bit<32> MemoryModule::read_memory(uint32_t addr, uint32_t width,
+                                  bool is_unsigned) {
   Bit<32> rd_data;
+  addr %= 0x10000;
   switch (width) {
   case 0: {
     Bit<8> b = memory[addr];
@@ -115,6 +114,7 @@ Bit<32> MemoryModule::read_memory(uint32_t addr, uint32_t width, bool is_unsigne
 }
 
 void MemoryModule::write_memory(uint32_t addr, uint32_t width, uint32_t data) {
+  addr %= 0x10000;
   switch (width) {
   case 0: {
     memory[addr] = data;
@@ -303,10 +303,10 @@ void MemoryModule::decode_r_arith(const Bit<32> &inst, uint32_t pc_) {
   }
 }
 
- void MemoryModule::decode_i_arith(const Bit<32> &inst, uint32_t pc_) {
+void MemoryModule::decode_i_arith(const Bit<32> &inst, uint32_t pc_) {
   uint32_t f3 = to_unsigned(inst.range<14, 12>());
   pc <= pc_ + 4;
-  
+
   switch (f3) {
   // ADDI
   case 0b000: {
@@ -385,14 +385,14 @@ void MemoryModule::decode_r_arith(const Bit<32> &inst, uint32_t pc_) {
     }
   }
   }
- }
+}
 
- void MemoryModule::decode_load(const Bit<32> &inst, uint32_t pc_) {
+void MemoryModule::decode_load(const Bit<32> &inst, uint32_t pc_) {
   uint32_t f3 = to_unsigned(inst.range<14, 12>());
   pc <= pc_ + 4;
   a <= dark::sign_extend<32>(inst.range<31, 20>());
   switch (f3) {
-  
+
   case 0b000: {
     std::cerr << "LB" << std::endl;
     op <= static_cast<max_size_t>(Opcode::LB);
@@ -422,17 +422,12 @@ void MemoryModule::decode_r_arith(const Bit<32> &inst, uint32_t pc_) {
     break;
   }
   }
- }
+}
 
- void MemoryModule::decode_b_type(const Bit<32> &inst, uint32_t pc_) {
+void MemoryModule::decode_b_type(const Bit<32> &inst, uint32_t pc_) {
   max_size_t f3 = to_unsigned(inst.range<14, 12>());
-  Bit<13> imm = {
-    inst.range<31, 31>(),
-    inst.range<7, 7>(),
-    inst.range<30, 25>(),
-    inst.range<11, 8>(),
-    Bit<1>()
-  };
+  Bit<13> imm = {inst.range<31, 31>(), inst.range<7, 7>(), inst.range<30, 25>(),
+                 inst.range<11, 8>(), Bit<1>()};
   int32_t imm_data = to_signed(imm);
   a <= imm_data;
   if (predictor->opt(this, pc_)) {
@@ -445,117 +440,99 @@ void MemoryModule::decode_r_arith(const Bit<32> &inst, uint32_t pc_) {
     jump <= 0;
   }
   switch (f3) {
-    case 0b000: {
-      std::cerr << "BEQ" << std::endl;
-      op <= static_cast<max_size_t>(Opcode::BEQ);
-      break;
-    }
-
-    case 0b001: {
-      std::cerr << "BNE" << std::endl;
-      op <= static_cast<max_size_t>(Opcode::BNE);
-      break;
-    }
-
-    case 0b100: {
-      std::cerr << "BLT" << std::endl;
-      op <= static_cast<max_size_t>(Opcode::BLT);
-      break;
-    }
-
-    case 0b101: {
-      std::cerr << "BGE" << std::endl;
-      op <= static_cast<max_size_t>(Opcode::BGE);
-      break;
-    }
-
-    case 0b110: {
-      std::cerr << "BLTU" << std::endl;
-      op <= static_cast<max_size_t>(Opcode::BLTU);
-      break;
-    }
-
-    case 0b111: {
-      std::cerr << "BGEU" << std::endl;
-      op <= static_cast<max_size_t>(Opcode::BGEU);
-      break;
-    }
+  case 0b000: {
+    std::cerr << "BEQ" << std::endl;
+    op <= static_cast<max_size_t>(Opcode::BEQ);
+    break;
   }
- }
 
- void MemoryModule::decode_s_type(const Bit<32> &inst, uint32_t pc_) {
+  case 0b001: {
+    std::cerr << "BNE" << std::endl;
+    op <= static_cast<max_size_t>(Opcode::BNE);
+    break;
+  }
+
+  case 0b100: {
+    std::cerr << "BLT" << std::endl;
+    op <= static_cast<max_size_t>(Opcode::BLT);
+    break;
+  }
+
+  case 0b101: {
+    std::cerr << "BGE" << std::endl;
+    op <= static_cast<max_size_t>(Opcode::BGE);
+    break;
+  }
+
+  case 0b110: {
+    std::cerr << "BLTU" << std::endl;
+    op <= static_cast<max_size_t>(Opcode::BLTU);
+    break;
+  }
+
+  case 0b111: {
+    std::cerr << "BGEU" << std::endl;
+    op <= static_cast<max_size_t>(Opcode::BGEU);
+    break;
+  }
+  }
+}
+
+void MemoryModule::decode_s_type(const Bit<32> &inst, uint32_t pc_) {
   max_size_t f3 = to_unsigned(inst.range<14, 12>());
-  Bit<12> imm = {
-    inst.range<31, 25>(),
-    inst.range<11, 7>()
-  };
+  Bit<12> imm = {inst.range<31, 25>(), inst.range<11, 7>()};
   a <= to_signed(imm);
   pc <= pc_ + 4;
   switch (f3) {
-    case 0b000: {
-      std::cerr << "SB" << std::endl;
-      op <= static_cast<max_size_t>(Opcode::SB);
-      break;
-    }
-
-    case 0b001: {
-      std::cerr << "SH" << std::endl;
-      op <= static_cast<max_size_t>(Opcode::SH);
-      break;
-    }
-
-    case 0b010: {
-      std::cerr << "SW" << std::endl;
-      op <= static_cast<max_size_t>(Opcode::SW);
-      break;
-    }
+  case 0b000: {
+    std::cerr << "SB" << std::endl;
+    op <= static_cast<max_size_t>(Opcode::SB);
+    break;
   }
- }
 
- void MemoryModule::decode_lui(const Bit<32> &inst, uint32_t pc_) {
-  Bit<32> imm = {
-    inst.range<31, 12>(),
-    Bit<12>()
-  };
+  case 0b001: {
+    std::cerr << "SH" << std::endl;
+    op <= static_cast<max_size_t>(Opcode::SH);
+    break;
+  }
+
+  case 0b010: {
+    std::cerr << "SW" << std::endl;
+    op <= static_cast<max_size_t>(Opcode::SW);
+    break;
+  }
+  }
+}
+
+void MemoryModule::decode_lui(const Bit<32> &inst, uint32_t pc_) {
+  Bit<32> imm = {inst.range<31, 12>(), Bit<12>()};
   pc <= pc_ + 4;
   op <= static_cast<max_size_t>(Opcode::LUI);
- }
+  a <= to_signed(imm);
+}
 
- void MemoryModule::decode_auipc(const Bit<32> &inst, uint32_t pc_) {
-  Bit<32> imm = {
-    inst.range<31, 12>(),
-    Bit<12>()
-  };
+void MemoryModule::decode_auipc(const Bit<32> &inst, uint32_t pc_) {
+  Bit<32> imm = {inst.range<31, 12>(), Bit<12>()};
   pc <= pc_ + 4;
   op <= static_cast<max_size_t>(Opcode::AUIPC);
- }
+  a <= to_signed(imm);
+}
 
- void MemoryModule::decode_jal(const Bit<32> &inst, uint32_t pc_) {
-  Bit<21> imm = {
-    inst.range<31, 31>(),
-    inst.range<19, 12>(),
-    inst.range<20, 20>(),
-    inst.range<30, 21>(),
-    Bit<1>()
-  };
+void MemoryModule::decode_jal(const Bit<32> &inst, uint32_t pc_) {
+  Bit<21> imm = {inst.range<31, 31>(), inst.range<19, 12>(),
+                 inst.range<20, 20>(), inst.range<30, 21>(), Bit<1>()};
   pc <= pc_ + to_signed(imm);
   op <= static_cast<max_size_t>(Opcode::JAL);
   a <= to_signed(imm);
- }
+}
 
- void MemoryModule::decode_jalr(const Bit<32> &inst, uint32_t pc_) {
-  Bit<32> imm = {
-    inst.range<31, 12>(),
-    Bit<12>()
-  };
+void MemoryModule::decode_jalr(const Bit<32> &inst, uint32_t pc_) {
+  Bit<12> imm = inst.range<31, 20>();
   pc <= pc_ + 4;
   jump <= 0;
   predictor->update_jump(pc_, false);
   a <= to_signed(imm);
   op <= static_cast<max_size_t>(Opcode::JALR);
- }
+}
 
- MemoryModule::~MemoryModule() {
-   delete predictor;
- }
-
+MemoryModule::~MemoryModule() { delete predictor; }

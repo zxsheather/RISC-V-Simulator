@@ -60,7 +60,6 @@ struct RSPrivate {
   std::array<Register<32>, RS_MAX> qk;
   std::array<Register<32>, RS_MAX> rds;
   std::array<Register<32>, RS_MAX> rob_dests;
-  std::array<Register<32>, RS_MAX> reorder;
   std::array<Register<32>, RS_MAX> as;
   std::array<Register<32>, RS_MAX> pcs;  // Pcs of insts. The unique identifier.
   std::array<Register<1>, RS_MAX> jumps;
@@ -70,7 +69,7 @@ struct RSPrivate {
   
   std::array<Register<32>, 32> regs;
   std::array<Register<1>, 32> reorder_busy; // Reorder buffer busy flags.
-  std::array<Register<32>, 32> reorder_index; // Reorder buffer index.
+  std::array<Register<32>, RS_MAX> reorder;
 };
 
 struct RSModule : dark::Module<RSInput, RSOutput, RSPrivate> {

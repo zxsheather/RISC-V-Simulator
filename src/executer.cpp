@@ -31,7 +31,7 @@ void ExecuterModule::work() {
 }
 
 bool ExecuterModule::exec(max_size_t head) {
-  std::cerr << "Executing instruction at index " << head
+  std::cerr << "Executer: Executing instruction at index " << head
             << " with PC: " << std::hex << std::setw(8) << std::setfill('0')
             << pcs[head] << std::dec << std::endl;
   bool revert_flag = 0, to_memory_flag = 0, to_lsb_flag = 0, to_rs_flag = 1;
@@ -374,7 +374,6 @@ bool ExecuterModule::exec(max_size_t head) {
   rs_ind <= rs_inds[head];
   rs_update <= to_rs_flag;
   memory_out <= to_memory_flag;
-  lsb_out <= to_lsb_flag;
   if(revert_flag) {
     revert <= 1;
     lsb_out <= 0;
@@ -387,10 +386,12 @@ bool ExecuterModule::exec(max_size_t head) {
     }
     return false;
   }
+  lsb_out <= to_lsb_flag;
   revert <= 0;
   rs_pos <= pos;
   return true;
 }
+
 
 void ExecuterModule::append(max_size_t index) {
   busy[index] = 1;

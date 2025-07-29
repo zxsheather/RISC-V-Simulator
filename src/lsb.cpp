@@ -44,6 +44,7 @@ void LSBModule::work() {
   if (busy[head]) {
     if (ticker != 3) {
       ticker += 1;
+      rob_out <= 0;
     } else {
       ticker = 0;
       exec(head);
@@ -58,9 +59,9 @@ void LSBModule::work() {
 }
 
 void LSBModule::exec(uint32_t pos) {
-  head = (head + 1) % LSB_MAX;
-  busy[pos] = 0;
   if (ops[pos] >= Opcode::LB && ops[pos] <= Opcode::LHU) {
+    busy[pos] = 0;
+    head = (head + 1) % LSB_MAX;
     rob_out <= 1;
     rob_dest <= dests[pos];
     switch (ops[pos]) {
@@ -86,21 +87,26 @@ void LSBModule::exec(uint32_t pos) {
       }
     }
   } else if (ops[pos] >= Opcode::SB && ops[pos] <= Opcode::SW) {
-    rob_out <= 0;
-    switch (ops[pos]) {
-      case Opcode::SB: {
-        mem_module.write_memory(address[pos], 0, data[pos]);
-        break;
-      }
-      case Opcode::SH: {
-        mem_module.write_memory(address[pos], 1, data[pos]);
-        break;
-      }
-      case Opcode::SW: {
-        mem_module.write_memory(address[pos], 2, data[pos]);
-        break;
+    if (commit_pos >= int32_t(dests[pos])) {
+      head = (head + 1) % LSB_MAX;
+      busy[pos] = 0;
+      rob_out <= 0;
+      switch (ops[pos]) {
+        case Opcode::SB: {
+          mem_module.write_memory(address[pos], 0, data[pos]);
+          break;
+        }
+        case Opcode::SH: {
+          mem_module.write_memory(address[pos], 1, data[pos]);
+          break;
+        }
+        case Opcode::SW: {
+          mem_module.write_memory(address[pos], 2, data[pos]);
+          break;
+        }
       }
     }
+    
   } 
 }
 

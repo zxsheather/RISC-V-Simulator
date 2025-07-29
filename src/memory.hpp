@@ -4,7 +4,7 @@
 #include "tools.h"
 #include <cstdint>
 
-const int MEM_MAX = 0x11000;
+const int MEM_MAX = 0x100000; 
 struct MemoryModule;
 struct MemoryInput {
   Wire<1> rs_available;

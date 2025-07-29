@@ -22,6 +22,7 @@ void RSModule::work() {
   }
   if (revert) {
     flush();
+    return;
   }
   if (in) {
     std::cerr << "RS: Issue PC: " << std::hex << std::setw(8) << std::setfill('0')
@@ -178,11 +179,11 @@ void RSModule::update(uint32_t ind, Bit<32> &new_val, int &newly_freed_rd) {
       continue;
     }
     if (qj[i] == ind) {
-      qj[i] <= RS_MAX + 1;
+      qj[i] <= Q_DEFAULT;
       vj[i] <= new_val;
     }
     if (qk[i] == ind) {
-      qk[i] <= RS_MAX + 1;
+      qk[i] <= Q_DEFAULT;
       vk[i] <= new_val;
     }
   }

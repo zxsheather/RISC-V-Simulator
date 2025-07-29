@@ -8,7 +8,8 @@
 
 
 int main() {
-  freopen("/home/zx/local_repo/RISC-V-Simulator/testcases/naive.data", "r", stdin);
+  freopen("/home/zx/local_repo/RISC-V-Simulator/testcases/array_test2.data", "r", stdin);
+  freopen("output.txt", "w", stderr);
   dark::CPU cpu;
   RSModule rs;  
   MemoryModule memory;
