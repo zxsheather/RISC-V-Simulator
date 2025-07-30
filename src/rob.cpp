@@ -105,7 +105,6 @@ bool RobModule::exec(max_size_t head) {
 
 void RobModule::append(max_size_t index) {
   busy[index] = 1;
-  ready[index] = to_signed(ready_rs);
   rs_inds[index] = to_signed(ind_rs);
   dests[index] = to_signed(dest_rs);
   ops[index] = to_signed(op_rs);

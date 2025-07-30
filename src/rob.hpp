@@ -13,7 +13,6 @@ struct RobInput {
   Wire<32> a_rs;
   Wire<32> pc_rs;
   Wire<32> ind_rs;
-  Wire<1> ready_rs;
   Wire<1> jump_rs;
 
   Wire<1> in_alu;

@@ -9,8 +9,8 @@
 #include <cstdio>
 
 int main() {
-  // freopen("/home/zx/local_repo/RISC-V-Simulator/testcases/expr.data", "r",
-  //         stdin);
+  freopen("/home/zx/local_repo/RISC-V-Simulator/testcases/pi.data", "r",
+          stdin);
   // freopen("error.txt", "w", stderr);
   // freopen("output.txt", "w", stdout);
   dark::CPU cpu;
@@ -60,7 +60,6 @@ int main() {
   executer.a_rs = [&]() -> auto & { return rs.rob_a; };
   executer.pc_rs = [&]() -> auto & { return rs.rob_pc; };
   executer.ind_rs = [&]() -> auto & { return rs.rs_index; };
-  executer.ready_rs = [&]() -> auto & { return rs.rob_ready; };
   executer.jump_rs = [&]() -> auto & { return rs.rob_jump; };
 
   // alu -> executer

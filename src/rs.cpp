@@ -127,41 +127,34 @@ void RSModule::work() {
 
 void RSModule::exec(uint32_t pos, bool &src1, bool &src2, bool &userd) {
   if (op >= ADD && op <= SLTU) {
-    ready[pos] <= 1;
+    // Do nothing
   } else if (op >= ADDI && op <= SLTIU) {
-    ready[pos] <= 1;
     src2 = 0;
     as[pos] <= a_in;
   } else if (op >= LB && op <= LHU) {
     src2 = 0;
-    ready[pos] <= 0;
     as[pos] <= a_in;
     lsb_poses[pos] <= lsb_pos;
     lsb_pos++;
   } else if (op >= SB && op <= SW) {
     userd = 0;
-    ready[pos] <= 1;
     as[pos] <= a_in;
     lsb_poses[pos] <= lsb_pos;
     lsb_pos++;
   } else if (op >= BEQ && op <= BGEU) {
     userd = 0;
-    ready[pos] <= 1;
     as[pos] <= a_in;
   } else if (op == JALR) {
     src2 = 0;
-    ready[pos] <= 1;
     as[pos] <= a_in;
   } else if (op == JAL || op == AUIPC || op == LUI) {
     src1 = 0;
     src2 = 0;
-    ready[pos] <= 1;
     as[pos] <= a_in;
   } else {
     src1 = 0;
     src2 = 0;
     userd = 0;
-    ready[pos] <= 1;
   }
 }
 
@@ -231,7 +224,6 @@ void RSModule::trans(uint32_t i, bool &rob_out_flag, bool &lsb_out_flag) {
   rob_a <= as[i];
   rob_pc <= pcs[i];
   rs_index <= i;
-  rob_ready <= ready[i];
   rob_jump <= jumps[i];
 
   uint32_t oper = to_unsigned(ops[i]);
