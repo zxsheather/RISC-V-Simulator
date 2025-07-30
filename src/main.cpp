@@ -9,8 +9,8 @@
 #include <cstdio>
 
 int main() {
-  freopen("/home/zx/local_repo/RISC-V-Simulator/testcases/pi.data", "r",
-          stdin);
+  // freopen("/home/zx/local_repo/RISC-V-Simulator/testcases/pi.data", "r",
+  //         stdin);
   // freopen("error.txt", "w", stderr);
   // freopen("output.txt", "w", stdout);
   dark::CPU cpu;
