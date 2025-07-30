@@ -33,7 +33,6 @@ struct RSOutput {
   Register<32> rob_pc;
   Register<32> rob_a;
   Register<1> rob_jump;
-  Register<1> rob_ready;
   Register<32> rs_index;
 
   Register<1> lsb_flag;
@@ -59,7 +58,6 @@ struct RSPrivate {
   std::array<Register<32>, RS_MAX> pcs; // Pcs of insts. The unique identifier.
   std::array<Register<1>, RS_MAX> jumps;
   std::array<Register<1>, RS_MAX> dispatched;
-  std::array<Register<1>, RS_MAX> ready;
   std::array<Register<32>, RS_MAX> lsb_poses;
   std::array<Register<32>, 32> regs;
   std::array<Register<1>, 32> reorder_busy; // Reorder buffer busy flags.
