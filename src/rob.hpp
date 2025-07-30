@@ -1,9 +1,10 @@
 #include "module.h"
+#include "register.h"
 #include "tools.h"
-#include <cstdint>
 #include "util.hpp"
+#include <cstdint>
 
-struct ExecuterInput {
+struct RobInput {
   Wire<1> in_rs;
   Wire<32> op_rs;
   Wire<32> rs1_rs;
@@ -15,12 +16,16 @@ struct ExecuterInput {
   Wire<1> ready_rs;
   Wire<1> jump_rs;
 
+  Wire<1> in_alu;
+  Wire<32> index_alu;
+  Wire<32> res_alu;
+
   Wire<1> in_lsb;
   Wire<32> dest_lsb;
   Wire<32> val_lsb;
 };
 
-struct ExecuterOutput {
+struct RobOutput {
   Register<1> rs_out;
   Register<1> revert;
   Register<32> rs_pos;
@@ -33,9 +38,15 @@ struct ExecuterOutput {
   Register<32> memory_pc;
   Register<1> lsb_out;
   Register<32> lsb_dest;
+
+  Register<1> alu_out;
+  Register<32> operand_1;
+  Register<32> operand_2;
+  Register<32> alu_op;
+  Register<32> alu_index;
 };
 
-struct ExecuterModule : dark::Module<ExecuterInput, ExecuterOutput> {
+struct RobModule : dark::Module<RobInput, RobOutput> {
   uint32_t pos;
 
   // ROB table
@@ -48,6 +59,7 @@ struct ExecuterModule : dark::Module<ExecuterInput, ExecuterOutput> {
   int32_t rs1s[ROB_MAX] = {};
   int32_t rs2s[ROB_MAX] = {};
   int32_t as[ROB_MAX] = {};
+  int32_t value[ROB_MAX] = {};
   bool jumps[ROB_MAX] = {};
 
   void work() override final;

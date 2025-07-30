@@ -1,10 +1,9 @@
 #include "module.h"
 #include "predictor.hpp"
 #include "tools.h"
+#include "util.hpp"
 #include <array>
 #include <cstdint>
-#include "util.hpp"
-
 
 struct RSInput {
   Wire<1> in;
@@ -57,12 +56,11 @@ struct RSPrivate {
   std::array<Register<32>, RS_MAX> rds;
   std::array<Register<32>, RS_MAX> rob_dests;
   std::array<Register<32>, RS_MAX> as;
-  std::array<Register<32>, RS_MAX> pcs;  // Pcs of insts. The unique identifier.
+  std::array<Register<32>, RS_MAX> pcs; // Pcs of insts. The unique identifier.
   std::array<Register<1>, RS_MAX> jumps;
   std::array<Register<1>, RS_MAX> dispatched;
   std::array<Register<1>, RS_MAX> ready;
   std::array<Register<32>, RS_MAX> lsb_poses;
-  
   std::array<Register<32>, 32> regs;
   std::array<Register<1>, 32> reorder_busy; // Reorder buffer busy flags.
   std::array<Register<32>, RS_MAX> reorder;
@@ -75,8 +73,8 @@ struct RSModule : dark::Module<RSInput, RSOutput, RSPrivate> {
   void exec(uint32_t pos, bool &src1, bool &src2, bool &userd);
   uint32_t lsb_pos = 0;
   void print_res();
-  void update(uint32_t ind, Bit<32>& new_val, int& newly_freed_rd);
+  void update(uint32_t ind, Bit<32> &new_val, int &newly_freed_rd);
   void flush();
-  void trans(uint32_t i, bool& rob_out_flag, bool& lsb_out_flag);
-  RSModule(BranchPredictor *predictor) : predictor(predictor){}
+  void trans(uint32_t i, bool &rob_out_flag, bool &lsb_out_flag);
+  RSModule(BranchPredictor *predictor) : predictor(predictor) {}
 };

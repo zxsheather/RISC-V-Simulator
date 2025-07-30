@@ -1,7 +1,7 @@
 #include "lsb.hpp"
 #include "concept.h"
-#include "util.hpp"
 #include "tools.h"
+#include "util.hpp"
 #include <cstdint>
 
 void LSBModule::work() {
@@ -65,26 +65,26 @@ void LSBModule::exec(uint32_t pos) {
     rob_out <= 1;
     rob_dest <= dests[pos];
     switch (ops[pos]) {
-      case Opcode::LB: {
-        value <= mem_module.read_memory(address[pos], 0, false);
-        break;
-      }
-      case Opcode::LH: {
-        value <= mem_module.read_memory(address[pos], 1, false);
-        break;
-      }
-      case Opcode::LW: {
-        value <= mem_module.read_memory(address[pos], 2, false);
-        break;
-      }
-      case Opcode::LBU: {
-        value <= mem_module.read_memory(address[pos], 0, true);
-        break;
-      }
-      case Opcode::LHU: {
-        value <= mem_module.read_memory(address[pos], 1, true);
-        break;
-      }
+    case Opcode::LB: {
+      value <= mem_module.read_memory(address[pos], 0, false);
+      break;
+    }
+    case Opcode::LH: {
+      value <= mem_module.read_memory(address[pos], 1, false);
+      break;
+    }
+    case Opcode::LW: {
+      value <= mem_module.read_memory(address[pos], 2, false);
+      break;
+    }
+    case Opcode::LBU: {
+      value <= mem_module.read_memory(address[pos], 0, true);
+      break;
+    }
+    case Opcode::LHU: {
+      value <= mem_module.read_memory(address[pos], 1, true);
+      break;
+    }
     }
   } else if (ops[pos] >= Opcode::SB && ops[pos] <= Opcode::SW) {
     if (commit_pos >= int32_t(dests[pos])) {
@@ -92,22 +92,21 @@ void LSBModule::exec(uint32_t pos) {
       busy[pos] = 0;
       rob_out <= 0;
       switch (ops[pos]) {
-        case Opcode::SB: {
-          mem_module.write_memory(address[pos], 0, data[pos]);
-          break;
-        }
-        case Opcode::SH: {
-          mem_module.write_memory(address[pos], 1, data[pos]);
-          break;
-        }
-        case Opcode::SW: {
-          mem_module.write_memory(address[pos], 2, data[pos]);
-          break;
-        }
+      case Opcode::SB: {
+        mem_module.write_memory(address[pos], 0, data[pos]);
+        break;
+      }
+      case Opcode::SH: {
+        mem_module.write_memory(address[pos], 1, data[pos]);
+        break;
+      }
+      case Opcode::SW: {
+        mem_module.write_memory(address[pos], 2, data[pos]);
+        break;
+      }
       }
     }
-    
-  } 
+  }
 }
 
 void LSBModule::append(uint32_t pos) {
@@ -115,7 +114,7 @@ void LSBModule::append(uint32_t pos) {
   ops[pos] = to_unsigned(op_rs);
   dests[pos] = to_unsigned(dest_rs);
   address[pos] = to_unsigned(rs1_rs + a_rs);
-  if(ops[pos] >= Opcode::SB && ops[pos] <= Opcode::SW) {
+  if (ops[pos] >= Opcode::SB && ops[pos] <= Opcode::SW) {
     data[pos] = to_unsigned(rs2_rs);
   }
 }
