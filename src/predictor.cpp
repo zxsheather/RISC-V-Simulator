@@ -48,12 +48,10 @@ bool AlwaysFalsePredictor::refresh_predictor(const MemoryModule *mem) {
 }
 
 bool AlwaysFalsePredictor::opt(const MemoryModule *mem, uint32_t pc_now) {
-  return false; 
-} 
-
-uint32_t AlwaysTruePredictor::total_predictions() {
-  return total_predictions_;
+  return false;
 }
+
+uint32_t AlwaysTruePredictor::total_predictions() { return total_predictions_; }
 
 uint32_t AlwaysTruePredictor::correct_predictions() {
   return correct_predictions_;
@@ -71,5 +69,5 @@ bool AlwaysTruePredictor::refresh_predictor(const MemoryModule *mem) {
 }
 
 bool AlwaysTruePredictor::opt(const MemoryModule *mem, uint32_t pc_now) {
-  return true; 
-} 
+  return true;
+}

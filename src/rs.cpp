@@ -1,7 +1,7 @@
 #include "rs.hpp"
-#include "executer.hpp"
-#include "util.hpp"
+#include "rob.hpp"
 #include "tools.h"
+#include "util.hpp"
 #include <cstdint>
 #include <ostream>
 
@@ -25,7 +25,8 @@ void RSModule::work() {
   }
   if (in) {
     // std::cerr << "RS: Issue PC: " << std::hex << std::setw(8)
-    //           << std::setfill('0') << to_unsigned(pc) << std::dec << std::endl;
+    //           << std::setfill('0') << to_unsigned(pc) << std::dec <<
+    //           std::endl;
     max_size_t i = 0;
     for (; i < RS_MAX; ++i) {
       if (busy[i] == 0) {
@@ -107,7 +108,8 @@ void RSModule::work() {
     if (busy[i] && qj[i] == Q_DEFAULT && qk[i] == Q_DEFAULT &&
         dispatched[i] == 0 && to_unsigned(rob_dests[i]) < rob_pos + ROB_MAX) {
       // std::cerr << "RS: Dispatching instruction at index " << i
-      //           << " with PC: " << std::hex << std::setw(8) << std::setfill('0')
+      //           << " with PC: " << std::hex << std::setw(8) <<
+      //           std::setfill('0')
       //           << to_unsigned(pcs[i]) << std::dec << std::endl;
       trans(i, rob_out_flag, lsb_out_flag);
       break;
@@ -166,8 +168,8 @@ void RSModule::exec(uint32_t pos, bool &src1, bool &src2, bool &userd) {
 void RSModule::print_res() {
   Bit<32> res = regs[10];
   std::cout << to_unsigned(res.range<7, 0>()) << std::endl;
-  std::cerr << "Cycle count: " << cycle << std::endl;
-  predictor->print_stats();
+  // std::cerr << "Cycle count: " << cycle << std::endl;
+  // predictor->print_stats();
   exit(0);
 }
 

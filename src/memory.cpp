@@ -1,9 +1,9 @@
 #include "memory.hpp"
-#include "util.hpp"
+#include "predictor.hpp"
 #include "tools.h"
+#include "util.hpp"
 #include <cstdint>
 #include <sstream>
-#include "predictor.hpp"
 
 void MemoryModule::load() {
   std::string line;
@@ -39,14 +39,14 @@ void MemoryModule::work() {
   if (rs_available && updated_now_pc < MEM_MAX) {
     out <= 1;
     // std::cerr << "Memory: Issue PC " << std::hex << std::setw(8)
-    //           << std::setfill('0') << updated_now_pc << std::dec << std::endl;
+    //           << std::setfill('0') << updated_now_pc << std::dec <<
+    //           std::endl;
     decode_and_issue(updated_now_pc);
   } else {
     pc <= updated_now_pc;
     out <= 0;
   }
 }
-
 
 Bit<32> MemoryModule::read_memory(uint32_t addr, uint32_t width,
                                   bool is_unsigned) {

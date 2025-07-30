@@ -1,9 +1,8 @@
 #pragma once
 #include "module.h"
 #include "tools.h"
-#include <cstdint>
 #include "util.hpp"
-
+#include <cstdint>
 
 struct BranchPredictor;
 struct MemoryModule;
@@ -13,7 +12,6 @@ struct AlwaysFalsePredictor;
 struct MemoryModule;
 struct MemoryInput {
   Wire<1> rs_available;
-
   Wire<1> rob_in;
   Wire<1> is_jump;
   Wire<32> rob_pc;
@@ -31,7 +29,6 @@ struct MemoryOutput {
   Register<32> a;
   Register<1> jump;
 };
-
 
 struct MemoryModule : dark::Module<MemoryInput, MemoryOutput> {
   uint8_t memory[MEM_MAX]{};
@@ -51,7 +48,6 @@ struct MemoryModule : dark::Module<MemoryInput, MemoryOutput> {
   void decode_jalr(const Bit<32> &inst, uint32_t pc_);
   Bit<32> read_memory(uint32_t addr, uint32_t width, bool is_unsigned);
   void write_memory(uint32_t addr, uint32_t width, uint32_t data);
-  MemoryModule(BranchPredictor *predictor_)
-      : predictor(predictor_) {}
+  MemoryModule(BranchPredictor *predictor_) : predictor(predictor_) {}
   ~MemoryModule();
 };

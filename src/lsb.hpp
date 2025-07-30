@@ -1,10 +1,8 @@
 #pragma once
+#include "memory.hpp"
 #include "module.h"
-#include "register.h"
 #include "tools.h"
 #include <cstdint>
-#include "memory.hpp"
-
 
 struct LSBInput {
   Wire<1> revert;
@@ -26,14 +24,13 @@ struct LSBOutput {
   Register<32> rob_dest;
 };
 
-
 struct LSBModule : dark::Module<LSBInput, LSBOutput> {
-  LSBModule(MemoryModule& mem_module_): mem_module(mem_module_){};
+  LSBModule(MemoryModule &mem_module_) : mem_module(mem_module_){};
   void work() override final;
   void exec(uint32_t pos);
   void append(uint32_t pos);
 
-  uint32_t ticker{}; 
+  uint32_t ticker{};
   int32_t commit_pos = -1;
   int32_t head{};
   bool busy[LSB_MAX]{};
@@ -42,5 +39,5 @@ struct LSBModule : dark::Module<LSBInput, LSBOutput> {
   uint32_t address[LSB_MAX]{};
   uint32_t data[LSB_MAX]{};
 
-  MemoryModule& mem_module;
+  MemoryModule &mem_module;
 };
