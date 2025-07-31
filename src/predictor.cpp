@@ -1,6 +1,6 @@
 #include "predictor.hpp"
 #include "memory.hpp"
-#include <iostream>
+#include <cstdint>
 
 uint32_t TwoBitPredictor::total_predictions() { return total_predictions_; }
 
@@ -24,50 +24,13 @@ bool TwoBitPredictor::refresh_predictor(const MemoryModule *mem) {
   }
 }
 
-bool TwoBitPredictor::opt(const MemoryModule *mem, uint32_t pc_now) {
-  return predict[pc_now] >= 2;
-}
-
-uint32_t AlwaysFalsePredictor::total_predictions() {
-  return total_predictions_;
-}
-
-uint32_t AlwaysFalsePredictor::correct_predictions() {
-  return correct_predictions_;
-}
-
-bool AlwaysFalsePredictor::refresh_predictor(const MemoryModule *mem) {
-  uint32_t pc_predict_ = to_unsigned(mem->predict_pc);
-  total_predictions_++;
-  if (jumps[pc_predict_] != mem->is_jump) {
-    return false;
+uint32_t TwoBitPredictor::opt(const MemoryModule *mem, uint32_t pc_now, int32_t imm) {
+  if (predict[pc_now]>=2){
+    jumps[pc_now] = pc_now + imm;
   } else {
-    correct_predictions_++;
-    return true;
+    jumps[pc_now] = pc_now + 4;
   }
+  return jumps[pc_now];
 }
 
-bool AlwaysFalsePredictor::opt(const MemoryModule *mem, uint32_t pc_now) {
-  return false;
-}
 
-uint32_t AlwaysTruePredictor::total_predictions() { return total_predictions_; }
-
-uint32_t AlwaysTruePredictor::correct_predictions() {
-  return correct_predictions_;
-}
-
-bool AlwaysTruePredictor::refresh_predictor(const MemoryModule *mem) {
-  uint32_t pc_predict_ = to_unsigned(mem->predict_pc);
-  total_predictions_++;
-  if (jumps[pc_predict_] != mem->is_jump) {
-    return true;
-  } else {
-    correct_predictions_++;
-    return true;
-  }
-}
-
-bool AlwaysTruePredictor::opt(const MemoryModule *mem, uint32_t pc_now) {
-  return true;
-}

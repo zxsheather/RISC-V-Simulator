@@ -413,15 +413,7 @@ void MemoryModule::decode_b_type(const Bit<32> &inst, uint32_t pc_) {
                  inst.range<11, 8>(), Bit<1>()};
   int32_t imm_data = to_signed(imm);
   a <= imm_data;
-  if (predictor->opt(this, pc_)) {
-    pc <= pc_ + imm_data;
-    predictor->update_jump(pc_, true);
-    jump <= 1;
-  } else {
-    pc <= pc_ + 4;
-    predictor->update_jump(pc_, false);
-    jump <= 0;
-  }
+  jump <= predictor->opt(this, pc_, imm_data);
   switch (f3) {
   case 0b000: {
     // std::cerr << "BEQ" << std::endl;
@@ -511,7 +503,6 @@ void MemoryModule::decode_jal(const Bit<32> &inst, uint32_t pc_) {
 
 void MemoryModule::decode_jalr(const Bit<32> &inst, uint32_t pc_) {
   Bit<12> imm = inst.range<31, 20>();
-  pc <= pc_ + 4;
   jump <= 0;
   predictor->update_jump(pc_, false);
   a <= to_signed(imm);

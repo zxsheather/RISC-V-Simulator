@@ -1,5 +1,6 @@
 #include "module.h"
 #include "predictor.hpp"
+#include "register.h"
 #include "tools.h"
 #include "util.hpp"
 #include <array>
@@ -21,6 +22,10 @@ struct RSInput {
   Wire<32> rob_in_ind;
   Wire<1> need_update;
   Wire<32> rob_value;
+
+  // Wire<1> rf_in;
+  // Wire<32> read_res_rf;
+  // Wire<1> rs_index_rf;
 };
 
 struct RSOutput {
@@ -42,6 +47,13 @@ struct RSOutput {
   Register<32> lsb_a;
   Register<32> lsb_dest;
   Register<32> to_lsb_pos;
+
+  // Register<1> rf_read_reg_index_1;
+  // Register<1> rf_read_reg_index_2;
+  // Register<1> rf_read_enable_1;
+  // Register<1> rf_read_enable_2;
+  // Register<1> rf_write_enable;
+  // Register<1> rf_
 };
 
 struct RSPrivate {

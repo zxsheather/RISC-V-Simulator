@@ -1,5 +1,6 @@
 #pragma once
 #include "module.h"
+#include "predictor.hpp"
 #include "tools.h"
 #include "util.hpp"
 #include <cstdint>
@@ -27,7 +28,7 @@ struct MemoryOutput {
   Register<32> rs1;
   Register<32> rs2;
   Register<32> a;
-  Register<1> jump;
+  Register<32> jump;
 };
 
 struct MemoryModule : dark::Module<MemoryInput, MemoryOutput> {
